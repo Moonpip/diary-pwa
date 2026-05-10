@@ -1,0 +1,2361 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>日記・家計 Pro｜Ledger & Diary</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Zen+Kaku+Gothic+New:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#1e293b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+
+<style>
+:root{
+  --pro-bg:#e4e9f3;
+  --pro-surface:#ffffff;
+  --pro-ink:#0f172a;
+  --pro-ink-muted:#475569;
+  --pro-accent:#4f46e5;
+  --pro-accent-2:#7c3aed;
+  --pro-accent-3:#06b6d4;
+  --pro-accent-hover:#4338ca;
+  --pro-border:rgba(15,23,42,0.07);
+  --pro-glow:rgba(99,102,241,0.35);
+  --pro-shadow:0 1px 2px rgba(15,23,42,0.04),0 20px 50px -12px rgba(15,23,42,0.14);
+  --pro-radius:20px;
+  --pro-radius-sm:11px;
+  --pro-font:"DM Sans","Zen Kaku Gothic New",system-ui,sans-serif;
+  --pro-display:"Outfit","Zen Kaku Gothic New",sans-serif;
+}
+
+*{box-sizing:border-box}
+
+@keyframes shimmerLine{
+  0%{background-position:0% 50%}
+  100%{background-position:200% 50%}
+}
+@keyframes floatGlow{
+  0%,100%{opacity:.45;transform:scale(1)}
+  50%{opacity:.85;transform:scale(1.03)}
+}
+@keyframes badgeGlow{
+  0%,100%{filter:drop-shadow(0 2px 8px rgba(251,191,36,.4))}
+  50%{filter:drop-shadow(0 4px 16px rgba(251,191,36,.65))}
+}
+
+body{
+  font-family:var(--pro-font);
+  background-color:var(--pro-bg);
+  background-image:
+    linear-gradient(rgba(99,102,241,.028) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(99,102,241,.028) 1px,transparent 1px),
+    radial-gradient(ellipse 100% 70% at 95% -15%,rgba(124,58,237,.11),transparent 52%),
+    radial-gradient(ellipse 70% 55% at -5% 105%,rgba(6,182,212,.09),transparent 48%),
+    radial-gradient(ellipse 60% 40% at 45% 35%,rgba(79,70,229,.05),transparent 55%);
+  background-size:28px 28px,28px 28px,auto,auto,auto;
+  color:var(--pro-ink);
+  margin:0;
+  padding:0;
+  min-height:100vh;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ===== PRO ヘッダー ===== */
+.app-header{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(125deg,#020617 0%,#0f172a 35%,#1e1b4b 70%,#312e81 100%);
+  color:#f8fafc;
+  padding:22px 18px 26px;
+  margin:0 0 18px;
+  border-radius:0 0 var(--pro-radius) var(--pro-radius);
+  box-shadow:
+    0 4px 6px -1px rgba(0,0,0,.15),
+    0 25px 50px -12px rgba(49,46,129,.45),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+.app-header::before{
+  content:"";
+  position:absolute;
+  inset:-40% -20% auto -20%;
+  height:120%;
+  background:
+    radial-gradient(circle at 25% 35%,rgba(139,92,246,.35),transparent 42%),
+    radial-gradient(circle at 85% 55%,rgba(59,130,246,.25),transparent 38%);
+  animation:floatGlow 10s ease-in-out infinite;
+  pointer-events:none;
+}
+.app-header::after{
+  content:"";
+  position:absolute;
+  left:12%;
+  right:12%;
+  bottom:0;
+  height:1px;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(167,139,250,.65) 22%,
+    rgba(34,211,238,.5) 50%,
+    rgba(167,139,250,.45) 78%,
+    transparent
+  );
+  background-size:200% 100%;
+  animation:shimmerLine 8s linear infinite;
+  pointer-events:none;
+}
+.header-brand{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:8px;
+}
+.edition-badge{
+  display:inline-flex;
+  align-items:center;
+  letter-spacing:0.18em;
+  font-size:9px;
+  font-weight:800;
+  font-family:var(--pro-display);
+  padding:5px 12px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#fef08a 0%,#fbbf24 40%,#d97706 100%);
+  color:#422006;
+  text-transform:uppercase;
+  border:1px solid rgba(255,255,255,.35);
+  animation:badgeGlow 4s ease-in-out infinite;
+}
+.app-tagline{
+  margin:0;
+  font-size:12px;
+  font-weight:500;
+  color:rgba(248,250,252,.58);
+  letter-spacing:0.06em;
+}
+#titleH1{
+  position:relative;
+  z-index:1;
+  margin:0;
+  font-family:var(--pro-display);
+  font-size:clamp(1.45rem,4.2vw,1.85rem);
+  font-weight:800;
+  letter-spacing:-0.035em;
+  line-height:1.2;
+  text-shadow:0 2px 24px rgba(99,102,241,.25);
+  background:linear-gradient(105deg,#fff 12%,#e0e7ff 45%,#a5b4fc 88%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+#editDateLabel{
+  position:relative;
+  z-index:1;
+  margin-top:12px!important;
+  color:rgba(226,232,240,.55)!important;
+  font-size:12px!important;
+  letter-spacing:0.04em;
+}
+
+/* ===== メイン幅 ===== */
+.app-container{
+  max-width:740px;
+  margin:0 auto;
+  padding:0 16px 12px;
+}
+
+h2{
+  position:relative;
+  margin:0 0 16px;
+  padding-bottom:10px;
+  font-family:var(--pro-display);
+  font-size:1.12rem;
+  font-weight:700;
+  letter-spacing:-0.03em;
+  color:var(--pro-ink);
+}
+h2::after{
+  content:"";
+  position:absolute;
+  left:0;
+  bottom:0;
+  width:min(100%,200px);
+  height:3px;
+  border-radius:3px;
+  background:linear-gradient(90deg,var(--pro-accent),var(--pro-accent-2) 45%,var(--pro-accent-3));
+  opacity:.9;
+}
+h3.small{margin-top:14px}
+
+.section{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(165deg,#ffffff 0%,#fafbff 55%,#f4f6fb 100%);
+  padding:20px 18px;
+  border-radius:var(--pro-radius);
+  margin-bottom:15px;
+  border:1px solid var(--pro-border);
+  box-shadow:var(--pro-shadow);
+  transition:transform .25s ease,box-shadow .25s ease,border-color .2s ease;
+}
+.section::before{
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;
+  height:4px;
+  background:linear-gradient(90deg,var(--pro-accent),var(--pro-accent-2),var(--pro-accent-3));
+  opacity:.55;
+  pointer-events:none;
+}
+.section:hover{
+  transform:translateY(-2px);
+  box-shadow:0 24px 56px -14px rgba(15,23,42,.12),0 8px 24px -8px rgba(79,70,229,.12);
+  border-color:rgba(99,102,241,.15);
+}
+.section:hover::before{opacity:.85}
+
+button{
+  position:relative;
+  overflow:hidden;
+  padding:11px 16px;
+  margin:4px 6px 4px 0;
+  border-radius:var(--pro-radius-sm);
+  border:none;
+  background:linear-gradient(165deg,#6366f1,var(--pro-accent) 40%,#4338ca);
+  color:#fff;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:.01em;
+  cursor:pointer;
+  box-shadow:0 2px 8px rgba(79,70,229,.22),inset 0 1px 0 rgba(255,255,255,.12);
+  transition:transform .12s ease,box-shadow .18s ease,filter .15s ease;
+}
+button::after{
+  content:"";
+  position:absolute;
+  inset:-50% -40%;
+  background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.18) 49%,transparent 60%);
+  transform:translateX(-100%);
+  transition:transform .45s ease;
+  pointer-events:none;
+}
+button:hover::after{transform:translateX(100%)}
+button:hover{
+  filter:brightness(1.05);
+  box-shadow:0 8px 28px rgba(79,70,229,.35),inset 0 1px 0 rgba(255,255,255,.15);
+}
+button:active{transform:scale(.97)}
+button.green{
+  background:linear-gradient(165deg,#34d399,#16a34a 50%,#15803d);
+  box-shadow:0 2px 10px rgba(22,163,74,.28),inset 0 1px 0 rgba(255,255,255,.12);
+}
+button.green:hover{box-shadow:0 8px 26px rgba(22,163,74,.38)}
+button.red{
+  background:linear-gradient(165deg,#fb923c,#ef4444 45%,#dc2626);
+  box-shadow:0 2px 10px rgba(239,68,68,.26),inset 0 1px 0 rgba(255,255,255,.12);
+}
+button.red:hover{box-shadow:0 8px 26px rgba(239,68,68,.35)}
+
+/* 変動費：レシート読み取り（親の shimmer / overflow で隠れないよう明示） */
+.receipt-scan-wrap{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+}
+.receipt-scan-wrap > button[type="button"]{
+  display:block!important;
+  width:100%;
+  visibility:visible!important;
+  opacity:1!important;
+  margin:6px 0 8px 0!important;
+  box-sizing:border-box;
+  position:relative;
+  isolation:isolate;
+  z-index:1;
+}
+.receipt-scan-wrap > button[type="button"]::after{z-index:-1}
+
+input,textarea{
+  width:100%;
+  padding:12px 14px;
+  margin:6px 0;
+  border-radius:var(--pro-radius-sm);
+  border:1px solid rgba(15,23,42,.09);
+  background:rgba(248,250,252,.95);
+  font-family:inherit;
+  font-size:14px;
+  color:var(--pro-ink);
+  transition:border-color .2s ease,box-shadow .2s ease,background .2s ease;
+}
+input:focus,textarea:focus{
+  outline:none;
+  border-color:rgba(124,58,237,.42);
+  box-shadow:
+    0 0 0 3px rgba(99,102,241,.12),
+    0 12px 32px -10px rgba(79,70,229,.22);
+  background:#fff;
+}
+
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day{
+  padding:11px 4px;
+  border-radius:12px;
+  text-align:center;
+  background:linear-gradient(180deg,#f8fafc,#f1f5f9);
+  cursor:pointer;
+  user-select:none;
+  font-weight:600;
+  font-family:var(--pro-display);
+  font-size:13px;
+  border:1px solid rgba(15,23,42,.06);
+  box-shadow:0 1px 3px rgba(15,23,42,.06);
+  transition:background .18s ease,transform .14s ease,box-shadow .18s ease;
+}
+.day:hover{
+  background:linear-gradient(180deg,#fff,#e9eef5);
+  transform:translateY(-1px);
+  box-shadow:0 6px 16px -4px rgba(15,23,42,.1);
+}
+.checked{
+  background:linear-gradient(165deg,#4ade80,#16a34a 45%,#15803d)!important;
+  color:#fff!important;
+  border-color:rgba(22,163,74,.45);
+  box-shadow:0 6px 18px -4px rgba(22,163,74,.4),inset 0 1px 0 rgba(255,255,255,.2);
+}
+.memo-row{display:flex;gap:8px;align-items:stretch}
+.memo-row textarea{flex:1}
+.small{font-size:12px;color:var(--pro-ink-muted);line-height:1.55}
+
+.sun{background:#fce7f3!important}
+.sat{background:#e0f2fe!important}
+.holiday{background:#fef9c3!important}
+.inline-del{background:#ef4444;font-size:12px;padding:4px 8px;border-radius:8px;margin:4px 0}
+.month-summary{font-size:14px;margin-top:4px;font-weight:500}
+.logline{font-size:13px;line-height:1.55;color:var(--pro-ink-muted)}
+
+.today{
+  border:2px solid transparent;
+  background:
+    linear-gradient(180deg,#fff8f9,#fdeff2) padding-box,
+    linear-gradient(135deg,#f43f5e,#ec4899,#a855f7) border-box;
+  font-weight:800;
+  box-shadow:
+    0 0 0 1px rgba(244,63,94,.12) inset,
+    0 8px 20px -6px rgba(236,72,153,.28);
+}
+.calendar{margin-bottom:16px}
+
+#monthLabel{
+  font-family:var(--pro-display);
+  letter-spacing:-.03em;
+  font-size:1.2rem;
+}
+#chart{
+  display:block;
+  margin:14px auto 0;
+  width:260px;
+  height:180px;
+  max-width:100%;
+  border-radius:18px;
+  background:linear-gradient(145deg,#f8fafc,#eef2ff);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.95),
+    0 16px 48px -14px rgba(79,70,229,.26),
+    0 2px 8px rgba(15,23,42,.06);
+}
+
+body.past-edit{
+  background:
+    radial-gradient(ellipse at 70% -10%,rgba(129,140,246,.06),transparent 45%),
+    linear-gradient(180deg,#dde3ee,var(--pro-bg));
+}
+
+/* ===== 設定 ===== */
+#settingBtn{
+  width:auto;
+  height:auto;
+  border-radius:14px;
+  background:linear-gradient(155deg,#a78bfa,#6366f1 40%,#4f46e5)!important;
+  color:#fff!important;
+  font-size:19px;
+  padding:11px 18px!important;
+  margin-left:8px;
+  display:inline-block;
+  cursor:pointer;
+  box-shadow:
+    0 6px 24px rgba(99,102,241,.42),
+    inset 0 1px 0 rgba(255,255,255,.2)!important;
+  border:1px solid rgba(255,255,255,.28);
+  vertical-align:middle;
+  line-height:1;
+  transition:filter .18s ease,transform .12s ease!important;
+}
+#settingBtn:hover{filter:brightness(1.1);transform:scale(1.04)}
+
+#settingPanel{
+  position:fixed;
+  left:50%;
+  bottom:90px;
+  transform:translateX(-50%);
+  width:min(340px,calc(100vw - 28px));
+  background:linear-gradient(180deg,#ffffff,#f5f7fd);
+  border-radius:calc(var(--pro-radius) + 4px);
+  padding:22px;
+  border:1px solid rgba(99,102,241,.14);
+  box-shadow:
+    0 28px 64px rgba(15,23,42,.28),
+    0 0 0 1px rgba(255,255,255,.6) inset;
+  z-index:10001;
+  display:none;
+}
+#settingPanel h3{
+  font-family:var(--pro-display);
+  font-size:.95rem;
+  letter-spacing:-.02em;
+  margin:8px 0 4px;
+}
+.setRow{display:flex;justify-content:space-between;align-items:center;margin:12px 0;gap:10px}
+
+#settingPanel select{
+  font-family:inherit;
+  font-size:13px;
+  font-weight:500;
+  padding:8px 10px;
+  border-radius:8px;
+  border:1px solid var(--pro-border);
+  background:#f8fafc;
+  color:var(--pro-ink);
+}
+#settingPanel input[type="color"]{
+  width:48px;height:36px;padding:4px;border-radius:8px;border:1px solid var(--pro-border);cursor:pointer;
+}
+body.dark #settingPanel select{
+  background:#0f172a;
+  color:#e5e7eb;
+  border-color:rgba(255,255,255,0.15);
+}
+
+#topPaidBadges,#topMiscBadges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  margin:4px 0 12px;
+}
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 11px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:600;
+  line-height:1.2;
+  border:1px solid var(--pro-border);
+  background:#f8fafc;
+  color:var(--pro-ink);
+  user-select:none;
+}
+.badge.ok{
+  background:linear-gradient(180deg,#ecfdf5,#d1fae5);
+  border-color:rgba(34,197,94,0.35);
+  color:#14532d;
+}
+.badge.ng{
+  background:linear-gradient(180deg,#fef2f2,#fecaca);
+  border-color:rgba(239,68,68,0.35);
+  color:#7f1d1d;
+}
+.badge.neu{
+  background:linear-gradient(180deg,#f0f9ff,#e0f2fe);
+  border-color:rgba(59,130,246,0.3);
+  color:#0c4a6e;
+}
+.badge .dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:currentColor;
+  opacity:0.85;
+}
+
+#bottomMemoBar{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  height:76px;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--pro-border);
+  box-shadow:0 -8px 32px rgba(15,23,42,0.08);
+  z-index:20000;
+  display:flex;
+  gap:10px;
+  padding:10px 12px;
+  box-sizing:border-box;
+  overscroll-behavior:contain;
+}
+#bottomMemoInput{
+  flex:1;
+  resize:none;
+  border:1px solid var(--pro-border);
+  border-radius:12px;
+  padding:10px 12px;
+  font-size:14px;
+  outline:none;
+  margin:0;
+  background:#f8fafc;
+}
+#bottomMemoFullBtn{
+  width:84px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(155deg,#a78bfa,#6366f1 45%,#4f46e5);
+  color:#fff;
+  font-weight:800;
+  font-family:var(--pro-display);
+  font-size:14px;
+  letter-spacing:.04em;
+  margin:0;
+  box-shadow:0 4px 16px rgba(79,70,229,.38),inset 0 1px 0 rgba(255,255,255,.22);
+}
+
+.page-bottom-pad{height:88px}
+
+#fullMemoOverlay{
+  position:fixed;
+  inset:0;
+  background:#fff;
+  z-index:999999;
+  display:none;
+  flex-direction:column;
+}
+#fullMemoHeader{
+  height:54px;
+  background:linear-gradient(135deg,#1e293b,#312e81);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 14px;
+  font-weight:700;
+  box-sizing:border-box;
+}
+#fullMemoHeader .title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+#fullMemoCloseBtn{
+  background:#dc2626;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  padding:8px 14px;
+  font-size:16px;
+  margin:0;
+}
+#fullMemoInput{
+  flex:1;
+  border:none;
+  outline:none;
+  padding:16px;
+  font-size:16px;
+  resize:none;
+  margin:0;
+  box-sizing:border-box;
+  font-family:inherit;
+}
+
+/* ===== ダーク ===== */
+body.dark{
+  color:#e5e7eb;
+  --pro-bg:#0b1120;
+  --pro-surface:#151c2e;
+  --pro-ink:#e8edf5;
+  --pro-ink-muted:#94a3b8;
+  --pro-border:rgba(248,250,252,0.08);
+}
+body.dark{background-image:
+  radial-gradient(ellipse at 80% 0%,rgba(99,102,241,0.12),transparent 45%),
+  radial-gradient(ellipse at 0% 100%,rgba(14,165,233,0.08),transparent 40%);
+}
+body.dark .app-header{
+  background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 100%);
+}
+body.dark .section{
+  background:var(--pro-surface);
+  border-color:var(--pro-border);
+}
+body.dark input,
+body.dark textarea{
+  background:#0f172a;
+  color:#e5e7eb;
+  border:1px solid rgba(255,255,255,0.12);
+}
+body.dark input:focus,
+body.dark textarea:focus{
+  border-color:rgba(129,140,248,0.5);
+  box-shadow:0 0 0 3px rgba(99,102,241,0.2);
+}
+body.dark .small{color:#94a3b8}
+body.dark .section{color:#e5e7eb}
+body.dark #bottomMemoBar{
+  background:rgba(15,23,42,0.92);
+  border-top-color:rgba(255,255,255,0.08);
+}
+body.dark #bottomMemoInput{
+  background:#0f172a;
+  color:#e5e7eb;
+  border:1px solid rgba(255,255,255,0.12);
+}
+body.dark #fullMemoOverlay{background:#0f172a}
+body.dark #fullMemoInput{background:#0f172a;color:#e5e7eb}
+body.dark .badge{border-color:rgba(255,255,255,0.1)}
+body.dark .day{color:#0f172a}
+body.dark .checked{color:#fff}
+body.dark #monthLabel{color:#e5e7eb}
+body.dark #editDateLabel{color:#94a3b8!important}
+body.dark #topPaidBadges .badge{color:#111827}
+body.dark #topMiscBadges .badge{color:#111827}
+body.dark #settingPanel{
+  background:linear-gradient(180deg,#1e293b,#151c2e);
+  border-color:rgba(129,140,248,.2);
+  box-shadow:
+    0 28px 64px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+body.dark #chart{
+  background:linear-gradient(145deg,#1e293b,#1a1840);
+  box-shadow:0 14px 44px -10px rgba(129,140,248,.25),inset 0 1px 0 rgba(255,255,255,.05);
+}
+body.dark .section::before{opacity:.75}
+body.dark #titleH1{
+  background:linear-gradient(105deg,#fff 5%,#c7d2fe 40%,#a5b4fc 90%);
+  -webkit-background-clip:text;
+  background-clip:text;
+}
+
+@media (prefers-reduced-motion:reduce){
+  .app-header::before,.app-header::after,
+  .edition-badge{animation:none!important}
+  .section,.day,button{transition-duration:.15s!important}
+}
+</style>
+</head>
+
+<body>
+
+<header class="app-header">
+  <div class="header-brand">
+    <span class="edition-badge">PRO</span>
+    <p class="app-tagline">日記 × 家計を、このひとつの画面で</p>
+  </div>
+  <h1 id="titleH1">📘 日記・家計 Pro</h1>
+  <div id="editDateLabel" class="small" style="margin-bottom:4px;"></div>
+</header>
+
+<div class="app-container">
+<!-- ★ ここに「家賃などの支払いチェック表示」を出す -->
+<div id="topPaidBadges" class="small"></div>
+
+<!-- ★ ここに「雑費（買い物）チェック表示」を出す -->
+<div id="topMiscBadges" class="small"></div>
+
+<!-- 操作 -->
+<div class="section">
+  <button class="red" onclick="clearTodayAll()">🧹 今日をオールクリア</button>
+  <button class="green" onclick="manualSaveToday()">💾 保存（ファイル保存）</button>
+  <div id="settingBtn">⚙</div>
+  <div class="small">※「保存」はバックアップJSONを書き出します（復元も可能）</div>
+  <div class="small">※自動バックアップ（勝手にダウンロード）は停止しました</div>
+</div>
+
+<!-- 日記 -->
+<div class="section">
+  <h2>📝 日記</h2>
+  <div id="diaryButtons"></div>
+  <textarea id="diary" rows="4" oninput="autoSaveDiary()"></textarea>
+  <br>
+  <button onclick="saveDiary()">保存</button>
+  <button class="red" onclick="clearDiary()">🗑 日記クリア</button>
+
+  <h3 class="small">日記カスタム</h3>
+  <input id="newDiaryBtn" placeholder="ボタン名">
+  <button onclick="addDiaryButton()">追加</button>
+</div>
+
+<!-- 変動費 -->
+<div class="section">
+  <h2>💰 変動費</h2>
+  <div id="costButtons"></div>
+
+  <input id="costName" placeholder="カテゴリ">
+  <input id="costValue" placeholder="金額">
+  <div class="receipt-scan-wrap" style="margin-top:8px;">
+    <input type="file" accept="image/*" capture="environment" id="receiptInput" style="display:none">
+
+    <button type="button"
+      onclick="document.getElementById('receiptInput').click()"
+      style="width:100%;padding:10px;font-size:16px;background:#16a34a;">
+      📸 レシート読み取り
+    </button>
+  </div>
+  <button onclick="addCostButton()">追加</button>
+  <button class="red" onclick="clearTodayCosts()">🧹 今日の変動費をクリア</button>
+  <div id="costLog"></div>
+</div>
+
+<!-- ★ 雑費（買い物チェック） -->
+<div class="section">
+  <h2>🧻 雑費（買い物チェック）</h2>
+  <div class="small">チェックを付けると「買った」扱い。上のバッジにも表示されます。</div>
+  <div id="miscButtons"></div>
+  <input id="miscName" placeholder="例：トイレットペーパー / 洗剤 / ゴミ袋">
+  <button onclick="addMiscItem()">追加</button>
+  <button class="red" onclick="clearMiscChecks()">🧹 チェックを全解除</button>
+</div>
+
+<!-- 固定費 -->
+<div class="section">
+  <h2>🏠 固定費</h2>
+  <div id="fixedButtons"></div>
+
+  <input id="fixedName" placeholder="固定費名">
+  <input id="fixedValue" placeholder="金額">
+  <button onclick="addFixedButton()">追加</button>
+  <button class="red" onclick="clearTodayFixed()">🧹 固定費をクリア</button>
+
+  <div id="fixedLog" class="logline"></div>
+  <p>合計: <span id="fixedTotal">0</span> 円</p>
+  <div id="fixedStatusBox" class="small" style="margin-top:8px;"></div>
+</div>
+
+<!-- カレンダー -->
+<div class="section">
+  <button onclick="moveMonth(-1)">◀</button>
+  <button onclick="moveMonth(1)">▶</button>
+  <h2 id="monthLabel">📅</h2>
+  <div class="calendar" id="calendar"></div>
+</div>
+
+<!-- グラフ -->
+<div class="section">
+  <h2>📊 月次グラフ</h2>
+  <canvas id="chart" width="260" height="180"></canvas>
+</div>
+
+<!-- メモ（リスト） -->
+<div class="section">
+  <h2>🗒 メモ</h2>
+  <div id="memos"></div>
+  <button onclick="addMemo()">＋ メモ追加</button>
+</div>
+
+<!-- CSV -->
+<div class="section">
+  <button onclick="exportCSV()">📤 CSV出力</button>
+</div>
+
+<!-- ページ下余白（下メモバーに隠れないように） -->
+<div class="page-bottom-pad"></div>
+</div><!-- /.app-container -->
+
+<!-- ===== 下メモバー ===== -->
+<div id="bottomMemoBar" aria-label="下メモバー">
+  <textarea id="bottomMemoInput" placeholder="下メモ（自動保存）"></textarea>
+  <button id="bottomMemoFullBtn" type="button">全面</button>
+</div>
+
+<!-- ===== 全面メモ ===== -->
+<div id="fullMemoOverlay" aria-label="全面メモ">
+  <div id="fullMemoHeader">
+    <div class="title">📝 全面メモ</div>
+    <button id="fullMemoCloseBtn" type="button">×</button>
+  </div>
+  <textarea id="fullMemoInput" placeholder="ここにメモ…（自動保存）"></textarea>
+</div>
+
+<!-- 設定パネル -->
+<div id="settingPanel">
+  <h3>テーマ設定</h3>
+
+  <div class="setRow">
+    プリセット
+    <select id="themeSelect">
+      <option value="light">ライト</option>
+      <option value="dark">ダーク</option>
+      <option value="green">グリーン</option>
+      <option value="pink">ピンク</option>
+    </select>
+  </div>
+
+  <div class="setRow">
+    アプリ背景
+    <input type="color" id="appBgColor">
+  </div>
+
+  <div class="setRow">
+    下メモ背景
+    <input type="color" id="bottomMemoColor">
+  </div>
+
+  <hr>
+
+  <h3>バックアップ復元</h3>
+  <input type="file" id="restoreFile" accept="application/json">
+  <button id="restoreBtn" class="green" type="button">復元する</button>
+  <div class="small">※復元は appData を上書きします</div>
+
+  <hr>
+
+  <button id="closeSetting" class="red" type="button">閉じる</button>
+</div>
+
+<script>
+/* ===============================
+   基本
+=============================== */
+let current = new Date();
+
+function pad2(n){ return String(n).padStart(2,"0"); }
+function localDateKey(d){
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+}
+function localMonthKey(d){
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}`;
+}
+const todayKey = ()=> localDateKey(current);
+const monthKey = ()=> localMonthKey(current);
+
+let data = {}; // IndexedDB(DiaryLedgerDB)から起動時に非同期ロード
+
+/* ===============================
+   IndexedDB 完全ローカル保存構成
+   DB名: DiaryLedgerDB
+   ストア名: appStore
+   外部API不要・完全オフライン対応
+=============================== */
+
+/* --- メモリfallback（IndexedDB未対応時のみ使用）
+   ⚠️ 注意: メモリ保存のため、ページを閉じるとデータは消えます。
+   永続保存ではありません。IndexedDB対応ブラウザでのみ永続保存されます。
+--- */
+const _memoryStore = {};
+
+/* --- IndexedDB Promise ラッパー --- */
+let _db = null;
+
+function initDB() {
+  return new Promise((resolve) => {
+    if (!window.indexedDB) {
+      console.warn("IndexedDB未対応 → メモリfallback使用");
+      resolve(null);
+      return;
+    }
+    try {
+      const req = indexedDB.open("DiaryLedgerDB", 1);
+
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains("appStore")) {
+          db.createObjectStore("appStore", { keyPath: "key" });
+        }
+      };
+
+      req.onsuccess = (e) => {
+        _db = e.target.result;
+        resolve(_db);
+      };
+
+      req.onerror = (e) => {
+        console.warn("IndexedDB open失敗 → メモリfallback使用", e.target.error);
+        resolve(null);
+      };
+
+      req.onblocked = () => {
+        console.warn("IndexedDB blocked → メモリfallback使用");
+        resolve(null);
+      };
+    } catch(e) {
+      console.warn("IndexedDB例外 → メモリfallback使用", e);
+      resolve(null);
+    }
+  });
+}
+
+/* --- storageAPI: IndexedDB / メモリfallback --- */
+const storageAPI = {
+  async get(key) {
+    if (!_db) {
+      return (_memoryStore[key] !== undefined) ? _memoryStore[key] : null;
+    }
+    return new Promise((resolve) => {
+      try {
+        const tx = _db.transaction("appStore", "readonly");
+        const store = tx.objectStore("appStore");
+        const req = store.get(key);
+        req.onsuccess = () => {
+          const rec = req.result;
+          resolve((rec && rec.value !== undefined) ? rec.value : null);
+        };
+        req.onerror = () => resolve(null);
+      } catch(e) {
+        resolve(null);
+      }
+    });
+  },
+
+  async set(key, value) {
+    if (!_db) {
+      _memoryStore[key] = value;
+      return;
+    }
+    return new Promise((resolve) => {
+      try {
+        const tx = _db.transaction("appStore", "readwrite");
+        const store = tx.objectStore("appStore");
+        const req = store.put({ key, value });
+        req.onsuccess = () => resolve();
+        req.onerror = () => {
+          _memoryStore[key] = value;
+          resolve();
+        };
+      } catch(e) {
+        _memoryStore[key] = value;
+        resolve();
+      }
+    });
+  },
+
+  async remove(key) {
+    if (!_db) {
+      delete _memoryStore[key];
+      return;
+    }
+    return new Promise((resolve) => {
+      try {
+        const tx = _db.transaction("appStore", "readwrite");
+        const store = tx.objectStore("appStore");
+        const req = store.delete(key);
+        req.onsuccess = () => resolve();
+        req.onerror = () => {
+          delete _memoryStore[key];
+          resolve();
+        };
+      } catch(e) {
+        delete _memoryStore[key];
+        resolve();
+      }
+    });
+  }
+};
+
+let _themeCache = {
+  appThemePreset: "light",
+  theme_bg: "#f4f6f8",
+  theme_bottomMemo: "#ffffff",
+  bottomQuickMemo: ""
+};
+
+async function saveData() {
+  try {
+    await storageAPI.set("appData", JSON.stringify(data));
+  } catch(e) {
+    console.error("saveData失敗:", e);
+  }
+}
+
+async function initApp() {
+  // appData読み込み
+  try {
+    const raw = await storageAPI.get("appData");
+    if (raw) {
+      data = JSON.parse(raw);
+    }
+  } catch(e) {}
+
+  // デフォルト値補完
+  data._paidStatus ??= {};
+  data._monthly ??= {};
+  data.diaryBtns ??= [];
+  data.costBtns ??= [];
+  data.fixedBtns ??= [];
+  data._globalMemo ??= [""];
+  data.miscBtns ??= [];
+  data._miscStatus ??= {};
+  data._income ??= {};
+  data._savingTotal ??= 0;
+  data._savingLog ??= {};
+  data._fixedPaidDate ??= {};
+  data._miscPaidDate ??= {};
+
+  // テーマ系読み込み
+  const themeKeys = ["appThemePreset","theme_bg","theme_bottomMemo","bottomQuickMemo"];
+  for (const k of themeKeys) {
+    try {
+      const v = await storageAPI.get(k);
+      if (v != null) _themeCache[k] = v;
+    } catch(e) {}
+  }
+
+  // テーマ適用
+  const preset = _themeCache.appThemePreset || "light";
+  await applyThemePreset(preset);
+  applyCustomColors();
+
+  // bottomMemo復元
+  const bm = document.getElementById("bottomMemoInput");
+  const fm = document.getElementById("fullMemoInput");
+  if(bm) bm.value = _themeCache.bottomQuickMemo || "";
+  if(fm) fm.value = _themeCache.bottomQuickMemo || "";
+
+  renderAll();
+}
+
+data._paidStatus ??= {};
+data._monthly ??= {};
+data.diaryBtns ??= [];
+data.costBtns ??= [];
+data.fixedBtns ??= [];
+data._globalMemo ??= [""];
+
+/* ★ 雑費（買い物チェック） */
+data.miscBtns ??= [];          // 例：["トイレットペーパー","洗剤"]
+data._miscStatus ??= {};       // 例：{ "トイレットペーパー": true }
+
+function ensureToday(){
+  const k = todayKey();
+  data[k] ??= {costs:[], fixed:{}, memos:[]};
+  data[k].costs ??= [];
+  data[k].fixed ??= {};
+  data[k].memos ??= [];
+  return k;
+}
+
+function recomputeMonthly(mk){
+  let costSum=0, fixedSum=0;
+  Object.keys(data)
+    .filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k) && k.slice(0,7)===mk)
+    .forEach(k=>{
+      const d=data[k]||{};
+      (d.costs||[]).forEach(c=> costSum += (+c.v||0));
+      Object.values(d.fixed||{}).forEach(v=> fixedSum += (+v||0));
+    });
+  data._monthly[mk] = {...(data._monthly[mk]||{}), cost:costSum, fixed:fixedSum};
+}
+
+/* ===============================
+   ★ タイトル付近：家賃などの支払いバッジ表示
+=============================== */
+function isImportantFixedName(name){
+  const s=String(name||"");
+  const keys=["家賃","住宅","電気","ガス","水道","ネット","WiFi","wifi","光","保険","携帯","スマホ","通信","NHK","サブスク","駐車","駐輪","ローン"];
+  return keys.some(k=>s.toLowerCase().includes(String(k).toLowerCase()));
+}
+function renderTopPaidBadges(){
+  const box=document.getElementById("topPaidBadges");
+  if(!box) return;
+
+  const mk=monthKey();
+  const paidMap=(data._paidStatus && data._paidStatus[mk]) ? data._paidStatus[mk] : {};
+  const all = (data.fixedBtns||[]).map(f=>String(f.n||"")).filter(Boolean);
+
+  if(!all.length){
+    box.innerHTML = `<span class="small">（固定費ボタンが未登録：家賃などを固定費に追加してね）</span>`;
+    return;
+  }
+
+  let paidCount=0;
+  all.forEach(n=>{ if(!!paidMap[n]) paidCount++; });
+
+  const important = all.filter(n=>isImportantFixedName(n));
+  const others = all.filter(n=>!isImportantFixedName(n));
+
+  const displayList = [...important, ...others].slice(0,8);
+
+  let html = "";
+  const allCount=all.length;
+  const statusCls = (paidCount===allCount) ? "ok" : (paidCount===0 ? "ng" : "neu");
+  html += `<span class="badge ${statusCls}"><span class="dot"></span>今月：${paidCount}/${allCount} 支払済</span>`;
+
+  displayList.forEach(n=>{
+    const paid = !!paidMap[n];
+    const cls = paid ? "ok" : "ng";
+    const mark = paid ? "✔" : "□";
+    html += `<span class="badge ${cls}"><span class="dot"></span>${mark} ${escapeHtml(n)}</span>`;
+  });
+
+  if(!important.length){
+    html += `<span class="badge neu"><span class="dot"></span>家賃など（重要固定費）の名前を固定費に入れると上に出る</span>`;
+  }
+
+  box.innerHTML = html;
+}
+
+/* ===============================
+   ★ タイトル付近：雑費（買い物）チェックバッジ表示
+=============================== */
+function renderTopMiscBadges(){
+  const box=document.getElementById("topMiscBadges");
+  if(!box) return;
+
+  const all = (data.miscBtns||[]).map(s=>String(s||"")).filter(Boolean);
+  if(!all.length){
+    box.innerHTML = `<span class="small">（雑費チェックが未登録：トイレットペーパー等を追加してね）</span>`;
+    return;
+  }
+
+  let done=0;
+  all.forEach(n=>{ if(!!data._miscStatus?.[n]) done++; });
+
+  const statusCls = (done===all.length) ? "ok" : (done===0 ? "ng" : "neu");
+  let html = "";
+  html += `<span class="badge ${statusCls}"><span class="dot"></span>雑費チェック：${done}/${all.length} 済</span>`;
+
+  const displayList = all.slice(0,10);
+  displayList.forEach(n=>{
+    const checked = !!data._miscStatus?.[n];
+    const cls = checked ? "ok" : "ng";
+    const mark = checked ? "✔" : "□";
+    html += `<span class="badge ${cls}"><span class="dot"></span>${mark} ${escapeHtml(n)}</span>`;
+  });
+
+  box.innerHTML = html;
+}
+
+/* ===============================
+   日記
+=============================== */
+function saveDiary(){
+  const k=ensureToday();
+  data[k].diary = diary.value;
+  save();
+}
+function clearDiary(){
+  diary.value="";
+  saveDiary();
+}
+function addDiaryButton(){
+  const n=newDiaryBtn.value.trim();
+  if(!n) return;
+  data.diaryBtns.push(n);
+  newDiaryBtn.value="";
+  renderDiaryButtons();
+  save();
+}
+function renderDiaryButtons(){
+  diaryButtons.innerHTML="";
+  data.diaryBtns.forEach((n,i)=>{
+    const b=document.createElement("button");
+    b.textContent=n;
+    b.onclick=()=>{
+      diary.value += `\n【${n}】`;
+      saveDiary();
+    };
+
+    const d=document.createElement("button");
+    d.textContent="🗑";
+    d.className="inline-del";
+    d.onclick=()=>{ data.diaryBtns.splice(i,1); renderDiaryButtons(); save(); };
+    diaryButtons.append(b,d);
+  });
+}
+async function autoSaveDiary(){
+  const k=ensureToday();
+  data[k].diary = diary.value;
+  await saveData();
+}
+
+/* ===============================
+   変動費
+=============================== */
+function addCostButton(){
+  const n=costName.value.trim();
+  const v=+costValue.value;
+  if(!n || !v) return;
+  data.costBtns.push({n,v});
+  costName.value="";
+  costValue.value="";
+  renderCostButtons();
+  save();
+}
+function renderCostButtons(){
+  costButtons.innerHTML="";
+  data.costBtns.forEach((c,i)=>{
+    const b=document.createElement("button");
+    b.textContent=c.n;
+    b.onclick=()=>{
+      const k=ensureToday();
+      data[k].costs.push({name:c.n, v:c.v});
+      save();
+    };
+
+    const d=document.createElement("button");
+    d.textContent="🗑";
+    d.className="inline-del";
+    d.onclick=()=>{ data.costBtns.splice(i,1); renderCostButtons(); save(); };
+    costButtons.append(b,d);
+  });
+}
+function renderCosts(){
+  const k=todayKey();
+  let sum=0;
+  costLog.innerHTML="";
+  ((data[k]?.costs)||[]).forEach(c=>{
+    const vv=+c.v||0;
+    sum+=vv;
+    costLog.innerHTML+=`<div class="logline">${escapeHtml(c.name)}:${vv}円</div>`;
+  });
+  recomputeMonthly(monthKey());
+  costLog.innerHTML+=`<b>合計:${sum}円</b>`;
+}
+function clearTodayCosts(){
+  const k=todayKey();
+  if(!data[k]) return;
+  if(!confirm("今日の変動費をすべて削除しますか？")) return;
+  data[k].costs=[];
+  save();
+}
+
+/* ===============================
+   ★ 雑費（買い物チェック）
+=============================== */
+function addMiscItem(){
+  const n=(document.getElementById("miscName")?.value||"").trim();
+  if(!n) return;
+  if(data.miscBtns.includes(n)){
+    showSaveToast("⚠ すでにあります");
+    return;
+  }
+  data.miscBtns.push(n);
+  document.getElementById("miscName").value="";
+  renderMisc();
+  save(true);
+}
+async function toggleMisc(name){
+  if(!name) return;
+  data._miscStatus ??= {};
+  if(data._miscStatus[name]) delete data._miscStatus[name];
+  else data._miscStatus[name]=true;
+  await saveData();
+  renderMisc();
+  renderTopMiscBadges();
+}
+function deleteMisc(name){
+  if(!name) return;
+  data.miscBtns = (data.miscBtns||[]).filter(x=>x!==name);
+  if(data._miscStatus && data._miscStatus[name]) delete data._miscStatus[name];
+  save(true);
+}
+function clearMiscChecks(){
+  if(!confirm("雑費チェックを全解除しますか？")) return;
+  data._miscStatus = {};
+  save(true);
+}
+function renderMisc(){
+  const box=document.getElementById("miscButtons");
+  if(!box) return;
+  box.innerHTML="";
+
+  const all=(data.miscBtns||[]).map(s=>String(s||"")).filter(Boolean);
+  if(!all.length){
+    box.innerHTML = `<div class="small">（まだ未登録）</div>`;
+    return;
+  }
+
+  all.forEach(name=>{
+    const paid = !!data._miscStatus?.[name];
+    const b=document.createElement("button");
+    b.textContent = (paid ? "✔ " : "□ ") + name;
+    b.style.background = paid ? "#22c55e" : "#e5e7eb";
+    b.style.color = paid ? "#fff" : "#000";
+    b.style.border = "none";
+    b.style.borderRadius = "10px";
+    b.onclick = ()=> toggleMisc(name);
+
+    const d=document.createElement("button");
+    d.textContent="🗑";
+    d.className="inline-del";
+    d.onclick=()=> deleteMisc(name);
+
+    box.appendChild(b);
+    box.appendChild(d);
+  });
+}
+
+/* ===============================
+   固定費
+=============================== */
+function addFixedButton(){
+  const n=fixedName.value.trim();
+  const v=+fixedValue.value;
+  if(!n || !v) return;
+  data.fixedBtns.push({n,v});
+  fixedName.value="";
+  fixedValue.value="";
+  renderFixed();
+  save();
+}
+function renderFixed(){
+  const k=todayKey();
+  fixedButtons.innerHTML="";
+  let sum=0;
+
+  data.fixedBtns.forEach((f,i)=>{
+    const b=document.createElement("button");
+    b.textContent=f.n;
+    b.onclick=()=>{
+      const kk=ensureToday();
+      data[kk].fixed[f.n]=f.v;
+      save();
+    };
+
+    const d=document.createElement("button");
+    d.textContent="🗑";
+    d.className="inline-del";
+    d.onclick=()=>{ data.fixedBtns.splice(i,1); renderFixed(); save(); };
+    fixedButtons.append(b,d);
+
+    if(data[k]?.fixed?.[f.n]) sum += f.v;
+  });
+
+  fixedTotal.textContent=sum;
+
+  const fl=document.getElementById("fixedLog");
+  if(fl){
+    fl.innerHTML="";
+    const entries=Object.entries(data[k]?.fixed||{});
+    if(entries.length){
+      entries.forEach(([name,val])=>{
+        fl.innerHTML += `<div class="logline">${escapeHtml(name)}:${(+val||0)}円</div>`;
+      });
+    }else{
+      fl.innerHTML = `<div class="small">（今日の固定費はまだありません）</div>`;
+    }
+  }
+
+  recomputeMonthly(monthKey());
+}
+function clearTodayFixed(){
+  const k=todayKey();
+  if(!data[k]) return;
+  if(!confirm("今日の固定費をすべて削除しますか？")) return;
+  data[k].fixed={};
+  save();
+}
+
+/* ===============================
+   支払いチェック（固定費）
+=============================== */
+async function toggleFixedPaid(name){
+  const mk=monthKey();
+  data._paidStatus[mk] ??= {};
+  if(data._paidStatus[mk][name]) delete data._paidStatus[mk][name];
+  else data._paidStatus[mk][name]=true;
+  await saveData();
+  renderPartial();
+}
+function renderFixedStatus(){
+  const mk=monthKey();
+  const box=document.getElementById("fixedStatusBox");
+  if(!box) return;
+
+  box.innerHTML="";
+  const title=document.createElement("div");
+  title.innerHTML="<b>📌 今月の支払い状況</b>";
+  box.appendChild(title);
+
+  (data.fixedBtns||[]).forEach(f=>{
+    const paid = !!data._paidStatus?.[mk]?.[f.n];
+
+    const row=document.createElement("div");
+    row.style.margin="3px 0";
+
+    const btn=document.createElement("button");
+    btn.type="button";
+    btn.style.background = paid ? "#22c55e" : "#e5e7eb";
+    btn.style.color = paid ? "#fff" : "#000";
+    btn.style.padding="5px 10px";
+    btn.style.borderRadius="8px";
+    btn.style.border="none";
+    btn.textContent = `${paid?'✔':'□'} ${f.n}`;
+    btn.onclick=()=>toggleFixedPaid(f.n);
+
+    row.appendChild(btn);
+    box.appendChild(row);
+  });
+}
+
+/* ===============================
+   カレンダー
+=============================== */
+function moveMonth(d){
+  current.setDate(1);
+  current.setMonth(current.getMonth()+d);
+  renderAll();
+}
+
+function isJapaneseHoliday(y,m,d){
+  const fixed = {
+    "1-1": true,"2-11": true,"4-29": true,"5-3": true,"5-4": true,"5-5": true,
+    "8-11": true,"11-3": true,"11-23": true
+  };
+  if(fixed[`${m+1}-${d}`]) return true;
+
+  const nthMonday=(month,n)=>{
+    let c=0;
+    for(let i=1;i<=31;i++){
+      const dt=new Date(y,month,i);
+      if(dt.getMonth()!==month) break;
+      if(dt.getDay()===1){
+        c++;
+        if(c===n) return i;
+      }
+    }
+  };
+  if(m===0 && d===nthMonday(0,2)) return true;
+  if(m===6 && d===nthMonday(6,3)) return true;
+  if(m===8 && d===nthMonday(8,3)) return true;
+  if(m===9 && d===nthMonday(9,2)) return true;
+
+  const vernal = Math.floor(20.8431 + 0.242194*(y-1980) - Math.floor((y-1980)/4));
+  const autumn = Math.floor(23.2488 + 0.242194*(y-1980) - Math.floor((y-1980)/4));
+  if(m===2 && d===vernal) return true;
+  if(m===8 && d===autumn) return true;
+
+  return false;
+}
+
+function renderCalendarMonth(){
+  const y=current.getFullYear(), m=current.getMonth();
+  const mk=monthKey();
+  recomputeMonthly(mk);
+
+  const sum=data._monthly[mk]||{};
+  monthLabel.innerHTML=`📅 ${y}年${m+1}月<br><span class="month-summary">固定:${sum.fixed||0}円 / 変動:${sum.cost||0}円</span>`;
+
+  calendar.innerHTML="";
+  
+  
+  
+  
+  
+  
+  ["日","月","火","水","木","金","土"].forEach(w=>{
+    calendar.innerHTML+=`<div class="small">${w}</div>`;
+  });
+
+  const firstDay=new Date(y,m,1).getDay();
+  const last=new Date(y,m+1,0).getDate();
+
+  for(let i=0;i<firstDay;i++) calendar.innerHTML+=`<div></div>`;
+
+  // ★ 今日のセルを強調（currentが今日じゃなくても「実際の今日」を赤枠）
+  const realNow = new Date();
+  const realTodayKey = `${realNow.getFullYear()}-${pad2(realNow.getMonth()+1)}-${pad2(realNow.getDate())}`;
+
+  for(let i=1;i<=last;i++){
+    const k=`${y}-${pad2(m+1)}-${pad2(i)}`;
+    let cls="day";
+    const wd=new Date(y,m,i).getDay();
+    if(wd===0) cls+=" sun";
+    if(wd===6) cls+=" sat";
+    if(isJapaneseHoliday(y,m,i)) cls+=" holiday";
+    if(data[k]) cls+=" checked";
+    if(k===realTodayKey) cls+=" today";
+
+    calendar.innerHTML+=`<div class="${cls}" data-day="${i}">${i}</div>`;
+  }
+
+  // ★ 日付クリックで編集日を切り替え
+  calendar.querySelectorAll(".day").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const day = +el.getAttribute("data-day");
+      if(!day) return;
+      current = new Date(y,m,day);
+      renderPartial();
+    });
+  });
+}
+
+/* ===============================
+   グラフ
+=============================== */
+function renderChart(){
+  const ctx=document.getElementById("chart").getContext("2d");
+  ctx.clearRect(0,0,300,200);
+
+  recomputeMonthly(monthKey());
+  const m=data._monthly[monthKey()]||{};
+  const cost=m.cost||0;
+  const fixed=m.fixed||0;
+
+  const max=Math.max(cost,fixed,1);
+  const scale=120/max;
+
+  ctx.fillStyle="#4f46e5";
+  const ch=cost*scale;
+  ctx.fillRect(50,150-ch,40,ch);
+  ctx.fillStyle="#0f172a";
+  ctx.fillText(cost+"円",50,150-ch-5);
+
+  ctx.fillStyle="#22c55e";
+  const fh=fixed*scale;
+  ctx.fillRect(130,150-fh,40,fh);
+  ctx.fillStyle="#0f172a";
+  ctx.fillText(fixed+"円",130,150-fh-5);
+
+  ctx.fillText("変動",50,165);
+  ctx.fillText("固定",130,165);
+}
+
+/* ===============================
+   メモ（リスト）
+=============================== */
+function addMemo(){
+  data._globalMemo.push("");
+  renderMemos();
+  save();
+}
+async function renderMemos(){
+  memos.innerHTML="";
+  data._globalMemo.forEach((m,i)=>{
+    const wrap=document.createElement("div");
+    wrap.className="memo-row";
+
+    const ta=document.createElement("textarea");
+    ta.value=m;
+    ta.oninput=async ()=>{
+      data._globalMemo[i]=ta.value;
+      await saveData();
+    };
+
+    const copy=document.createElement("button");
+    copy.textContent="📋";
+    copy.onclick=()=> navigator.clipboard.writeText(data._globalMemo[i]||"");
+
+    const del=document.createElement("button");
+    del.className="red";
+    del.textContent="🗑";
+    del.onclick=()=>{
+      data._globalMemo.splice(i,1);
+      renderMemos();
+      save();
+    };
+
+    wrap.appendChild(ta);
+    wrap.appendChild(copy);
+    wrap.appendChild(del);
+    memos.appendChild(wrap);
+  });
+}
+
+/* ===============================
+   CSV
+=============================== */
+function exportCSV(){
+  let csv="日付,日記,変動費,固定費\n";
+  Object.keys(data)
+    .filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k))
+    .sort()
+    .forEach(k=>{
+      const d=data[k];
+      const mk=k.slice(0,7);
+      recomputeMonthly(mk);
+      csv+=`${k},"${(d.diary||"").replace(/\n/g," ")}",${data._monthly[mk]?.cost||0},${data._monthly[mk]?.fixed||0}\n`;
+    });
+
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  window.open(url);
+  setTimeout(()=>URL.revokeObjectURL(url),10000);
+}
+
+/* ===============================
+   保存・バックアップ
+=============================== */
+async function save(noCalendar){
+  await saveData();
+  if(noCalendar){
+    renderPartial();
+  }else{
+    renderAll();
+  }
+}
+
+/* ① 手動保存＝ファイルに書き出し（復元前提） */
+async function manualSaveToday(){
+  ensureToday();
+  await saveData();
+  downloadBackupJSON();
+  showSaveToast("✔ 保存してバックアップを書き出しました");
+}
+
+function downloadBackupJSON(){
+  const d=new Date();
+  const name=`diary_backup_${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}.json`;
+  const json=JSON.stringify(data,null,2);
+  const blob=new Blob([json],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+
+/* ===============================
+   クリア
+=============================== */
+async function clearTodayAll(){
+  const k=todayKey();
+  const mk=monthKey();
+  if(!confirm("今日のデータを全て削除しますか？")) return;
+
+  delete data[k];
+
+  let costSum=0, fixedSum=0;
+  Object.keys(data).forEach(key=>{
+    if(!key.startsWith(mk)) return;
+    const d=data[key];
+    if(!d) return;
+    (d.costs||[]).forEach(c=> costSum+=(+c.v||0));
+    Object.values(d.fixed||{}).forEach(v=> fixedSum+=(+v||0));
+  });
+  data._monthly[mk]={cost:costSum, fixed:fixedSum};
+  await saveData();
+  renderAll();
+}
+
+/* ===============================
+   UI補助
+=============================== */
+function renderEditDateLabel(){
+  const el=document.getElementById("editDateLabel");
+  if(!el) return;
+  const d=current;
+  const w=["日","月","火","水","木","金","土"][d.getDay()];
+  el.textContent=`🗓 編集中：${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}（${w}）`;
+}
+function applyPastEditStyle(){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const cur=new Date(current); cur.setHours(0,0,0,0);
+  if(cur<today) document.body.classList.add("past-edit");
+  else document.body.classList.remove("past-edit");
+}
+function updateTitleDate(){
+  const w=["日","月","火","水","木","金","土"];
+  const d=current;
+  titleH1.textContent = `🗓 ${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${w[d.getDay()]}）`;
+}
+function showSaveToast(msg){
+  let t=document.getElementById("saveToast");
+  if(!t){
+    t=document.createElement("div");
+    t.id="saveToast";
+    t.style.position="fixed";
+    t.style.bottom="110px";
+    t.style.left="50%";
+    t.style.transform="translateX(-50%)";
+    t.style.background="linear-gradient(155deg,#34d399,#059669,#047857)";
+    t.style.color="#fff";
+    t.style.padding="14px 24px";
+    t.style.borderRadius="16px";
+    t.style.boxShadow="0 16px 40px rgba(22,163,74,.42),inset 0 1px 0 rgba(255,255,255,.25)";
+    t.style.border="1px solid rgba(255,255,255,.3)";
+    t.style.zIndex="99999";
+    t.style.fontWeight="700";
+    t.style.fontFamily="'Outfit',system-ui,sans-serif";
+    t.style.opacity="0";
+    t.style.transition="opacity .25s";
+    document.body.appendChild(t);
+  }
+  t.textContent=msg||"✔ 保存しました";
+  t.style.opacity="1";
+  setTimeout(()=>{ t.style.opacity="0"; },1400);
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+}
+
+/* ===============================
+   テーマ（プリセット＋色カスタム）
+=============================== */
+const THEMES = {
+  light:{
+    body:"#e4e9f3",
+    section:"linear-gradient(165deg,#ffffff,#f8fafc)",
+    text:"#0f172a",
+    button:"linear-gradient(165deg,#818cf8,#4f46e5,#4338ca)"
+  },
+  dark:{
+    body:"#0b1120",
+    section:"linear-gradient(165deg,#1a2235,#151c2e)",
+    text:"#e8edf5",
+    button:"linear-gradient(165deg,#818cf8,#6366f1,#4f46e5)"
+  },
+  green:{
+    body:"#ecfdf5",
+    section:"linear-gradient(165deg,#ecfdf5,#d1fae5)",
+    text:"#064e3b",
+    button:"linear-gradient(165deg,#34d399,#059669,#047857)"
+  },
+  pink:{
+    body:"#fff1f2",
+    section:"linear-gradient(165deg,#fff1f2,#ffe4e6)",
+    text:"#7f1d1d",
+    button:"linear-gradient(165deg,#fb7185,#e11d48,#be123c)"
+  }
+};
+
+async function applyThemePreset(name){
+  const t=THEMES[name];
+  if(!t) return;
+
+  document.body.style.background=t.body;
+  document.body.style.color=t.text;
+  document.querySelectorAll(".section").forEach(el=>{
+    el.style.background=t.section;
+    el.style.color=t.text;
+  });
+  document.querySelectorAll("button").forEach(btn=>{
+    if(!btn.classList.contains("red")){
+      btn.style.background=t.button;
+      btn.style.color="#fff";
+    }
+  });
+
+  if(name==="dark") document.body.classList.add("dark");
+  else document.body.classList.remove("dark");
+
+  try { await storageAPI.set("appThemePreset", name); } catch(e) { console.warn("テーマ保存失敗:", e); }
+}
+
+/* カスタム色（背景と下メモ） */
+function applyCustomColors(){
+  const bg=_themeCache.theme_bg;
+  if(bg) document.body.style.background=bg;
+
+  const bottom=_themeCache.theme_bottomMemo;
+  if(bottom){
+    const bar=document.getElementById("bottomMemoBar");
+    if(bar) bar.style.background=bottom;
+  }
+}
+
+/* ===============================
+   下メモ（全面対応）
+=============================== */
+(function(){
+  const barInput = document.getElementById("bottomMemoInput");
+  const fullBtn  = document.getElementById("bottomMemoFullBtn");
+  const overlay  = document.getElementById("fullMemoOverlay");
+  const closeBtn = document.getElementById("fullMemoCloseBtn");
+  const fullInput= document.getElementById("fullMemoInput");
+  if(!barInput || !fullBtn || !overlay || !closeBtn || !fullInput) return;
+
+  const KEY="bottomQuickMemo";
+
+  async function syncSave(v){
+    barInput.value = v;
+    fullInput.value = v;
+    try { await storageAPI.set("bottomQuickMemo", v); } catch(e) { console.warn("メモ保存失敗:", e); }
+  }
+
+  const saved = _themeCache.bottomQuickMemo || "";
+  barInput.value = saved;
+  fullInput.value = saved;
+
+  barInput.addEventListener("input", async ()=> { await syncSave(barInput.value); });
+  fullInput.addEventListener("input", async ()=> { await syncSave(fullInput.value); });
+
+  function openFull(){
+    overlay.style.display="flex";
+    document.body.style.overflow="hidden";
+    setTimeout(()=>{ fullInput.focus(); },30);
+  }
+  function closeFull(){
+    overlay.style.display="none";
+    document.body.style.overflow="";
+  }
+
+  fullBtn.addEventListener("click", openFull);
+  closeBtn.addEventListener("click", closeFull);
+
+  overlay.addEventListener("click",(e)=>{
+    if(e.target===overlay) closeFull();
+  });
+
+  fullInput.addEventListener("focus",()=>{
+    setTimeout(()=>{ overlay.scrollTop=0; },50);
+  });
+})();
+
+/* ===============================
+   設定パネル / 復元
+=============================== */
+(function(){
+  const settingBtn=document.getElementById("settingBtn");
+  const panel=document.getElementById("settingPanel");
+  const closeBtn=document.getElementById("closeSetting");
+  const themeSelect=document.getElementById("themeSelect");
+  const bgPicker=document.getElementById("appBgColor");
+  const bottomPicker=document.getElementById("bottomMemoColor");
+  const restoreFile=document.getElementById("restoreFile");
+  const restoreBtn=document.getElementById("restoreBtn");
+
+  settingBtn.onclick=()=> panel.style.display = (panel.style.display==="block"?"none":"block");
+  closeBtn.onclick=()=> panel.style.display="none";
+
+  themeSelect.onchange=async ()=>{
+    await applyThemePreset(themeSelect.value);
+    applyCustomColors();
+  };
+
+  bgPicker.onchange=async ()=>{
+    _themeCache.theme_bg=bgPicker.value;
+    try { await storageAPI.set("theme_bg", bgPicker.value); } catch(e) { console.warn("背景色保存失敗:", e); }
+    applyCustomColors();
+  };
+
+  bottomPicker.onchange=async ()=>{
+    _themeCache.theme_bottomMemo=bottomPicker.value;
+    try { await storageAPI.set("theme_bottomMemo", bottomPicker.value); } catch(e) { console.warn("下メモ色保存失敗:", e); }
+    applyCustomColors();
+  };
+
+  restoreBtn.onclick=()=>{
+    const file=restoreFile.files?.[0];
+    if(!file){
+      alert("復元するJSONファイルを選んでください");
+      return;
+    }
+    if(!confirm("復元します。現在のデータは上書きされます。よろしいですか？")) return;
+
+    const reader=new FileReader();
+    reader.onload=async ()=>{
+      try{
+        const obj=JSON.parse(String(reader.result||""));
+        if(typeof obj!=="object" || !obj){
+          alert("JSONが不正です");
+          return;
+        }
+        data=obj;
+        data._paidStatus ??= {};
+        data._monthly ??= {};
+        data.diaryBtns ??= [];
+        data.costBtns ??= [];
+        data.fixedBtns ??= [];
+        data._globalMemo ??= [""];
+
+        data.miscBtns ??= [];
+        data._miscStatus ??= {};
+
+        await saveData();
+        showSaveToast("✔ 復元しました");
+        panel.style.display="none";
+        renderAll();
+      }catch(e){
+        alert("復元に失敗しました（JSON形式を確認して）");
+      }
+    };
+    reader.readAsText(file,"utf-8");
+  };
+
+  // 起動時ロードは initApp() で処理済みのため不要
+  window.addEventListener("load",()=>{
+    themeSelect.value=_themeCache.appThemePreset||"light";
+    bgPicker.value=_themeCache.theme_bg||"#f4f6f8";
+    bottomPicker.value=_themeCache.theme_bottomMemo||"#ffffff";
+  });
+})();
+
+/* ===== カレンダー以外の再描画 ===== */
+function renderPartial(){
+  diary.value = data[todayKey()]?.diary || "";
+
+  renderDiaryButtons();
+  renderCostButtons();
+  renderCosts();
+  renderMisc();         // ★ 雑費
+  renderFixed();
+  renderChart();
+  renderMemos();
+
+  renderEditDateLabel();
+  applyPastEditStyle();
+  renderFixedStatus();
+  updateTitleDate();
+
+  renderTopPaidBadges();
+  renderTopMiscBadges();
+}
+
+/* ===============================
+   renderAll
+=============================== */
+function renderAll(){
+  diary.value = data[todayKey()]?.diary || "";
+
+  renderDiaryButtons();
+  renderCostButtons();
+  renderCosts();
+  renderMisc();         // ★ 雑費
+  renderFixed();
+
+  renderCalendarMonth();
+
+  renderChart();
+  renderMemos();
+
+  renderEditDateLabel();
+  applyPastEditStyle();
+  renderFixedStatus();
+  updateTitleDate();
+
+  renderTopPaidBadges();
+  renderTopMiscBadges();
+}
+
+/* ===============================
+   起動時：今日へ固定
+=============================== */
+(function forceTodayOnBoot(){
+  const now=new Date();
+  current=new Date(now.getFullYear(), now.getMonth(), now.getDate());
+})();
+
+/* ===============================
+   起動時テーマ適用
+=============================== */
+/* ===============================
+   起動順序:
+   IndexedDB初期化 → データロード → UI描画 → イベント登録
+=============================== */
+window.addEventListener("load", async () => {
+  try {
+    await initDB();
+  } catch(e) {
+    console.warn("initDB例外:", e);
+  }
+  try {
+    await initApp();
+  } catch(e) {
+    console.error("initApp例外:", e);
+  }
+});
+</script>
+
+<script>
+/* ===============================
+   PWA: Service Worker 登録
+=============================== */
+/* Service Worker: 開発中のため無効化
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(reg => console.log("SW登録OK", reg.scope))
+      .catch(err => console.log("SW失敗", err));
+  });
+}
+*/
+</script>
+<script>
+/* ===============================
+   💴 家計エンジン完全追加
+   （貼り付けだけで動作）
+=============================== */
+
+/* --- 初期データ拡張 --- */
+data._income ??= {};        // 月ごとの収入
+data._savingTotal ??= 0;    // 累計貯金
+data._savingLog ??= {};     // 月末保存フラグ
+data._fixedPaidDate ??= {}; // 固定費支払日記録
+data._miscPaidDate ??= {};  // 雑費購入日記録
+
+/* ===============================
+   収入入力UI自動追加
+=============================== */
+
+(function addIncomeUI(){
+  const box=document.createElement("div");
+  box.className="section";
+  box.innerHTML=`
+    <h2>💼 収入</h2>
+    <input id="incomeInput" placeholder="今月の収入">
+    <button onclick="saveIncome()">保存</button>
+    <p>残金: <b id="liveBalance">0</b> 円</p>
+    <p>累計貯金: <b id="savingTotalView">0</b> 円</p>
+  `;
+  const misc=document.getElementById("topMiscBadges");
+  const ac=document.querySelector(".app-container");
+  if(misc&&misc.parentNode){
+    misc.parentNode.insertBefore(box,misc);
+  }else if(ac){
+    ac.insertBefore(box,ac.firstChild);
+  }else{
+    document.body.appendChild(box);
+  }
+})();
+
+/* ===============================
+   収入保存
+=============================== */
+
+function saveIncome(){
+  const mk=monthKey();
+  data._income[mk]=+document.getElementById("incomeInput").value||0;
+  save();
+}
+
+/* ===============================
+   固定費支払日記録
+=============================== */
+
+const _oldToggleFixedPaid = toggleFixedPaid;
+toggleFixedPaid = function(name){
+  const mk=monthKey();
+  data._fixedPaidDate[mk] ??= {};
+  if(data._paidStatus?.[mk]?.[name]){
+    data._fixedPaidDate[mk][name]= todayKey();
+  }
+  _oldToggleFixedPaid(name);
+};
+
+/* ===============================
+   雑費購入日記録
+=============================== */
+
+const _oldToggleMisc = toggleMisc;
+toggleMisc = function(name){
+  if(!data._miscStatus?.[name]){
+    data._miscPaidDate[name]=todayKey();
+  }
+  _oldToggleMisc(name);
+};
+
+/* ===============================
+   残金リアルタイム計算
+=============================== */
+
+function calculateBalance(){
+  const mk=monthKey();
+  const income = data._income[mk]||0;
+
+  let cost=0, fixed=0;
+
+  Object.keys(data).forEach(k=>{
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(k)) return;
+    if(k.slice(0,7)!==mk) return;
+    const d=data[k];
+    (d.costs||[]).forEach(c=> cost+=+c.v||0);
+    Object.values(d.fixed||{}).forEach(v=> fixed+=+v||0);
+  });
+
+  const balance = income - cost - fixed;
+
+  const el=document.getElementById("liveBalance");
+  if(el) el.textContent=balance.toLocaleString();
+
+  const saveEl=document.getElementById("savingTotalView");
+  if(saveEl) saveEl.textContent=(data._savingTotal||0).toLocaleString();
+
+  autoMonthlySaving(balance);
+}
+
+/* ===============================
+   月末自動貯金
+=============================== */
+
+async function autoMonthlySaving(balance){
+  const now=new Date();
+  const lastDay=new Date(now.getFullYear(), now.getMonth()+1,0).getDate();
+  const mk=monthKey();
+
+  if(now.getDate()===lastDay && !data._savingLog[mk]){
+    if(balance>0){
+      data._savingTotal += balance;
+    }
+    data._savingLog[mk]=true;
+    await saveData();
+  }
+}
+
+/* ===============================
+   固定費バッジに日付表示追加
+=============================== */
+
+const _oldRenderTopPaidBadges = renderTopPaidBadges;
+renderTopPaidBadges = function(){
+  _oldRenderTopPaidBadges();
+
+  const mk=monthKey();
+  const box=document.getElementById("topPaidBadges");
+  if(!box) return;
+
+  if(data._fixedPaidDate?.[mk]){
+    Object.entries(data._fixedPaidDate[mk]).forEach(([name,date])=>{
+      box.innerHTML += `<span class="badge neu">📅 ${name}:${date}</span>`;
+    });
+  }
+};
+
+/* ===============================
+   雑費バッジに日付表示追加
+=============================== */
+
+const _oldRenderTopMiscBadges = renderTopMiscBadges;
+renderTopMiscBadges = function(){
+  _oldRenderTopMiscBadges();
+
+  const box=document.getElementById("topMiscBadges");
+  if(!box) return;
+
+  if(data._miscPaidDate){
+    Object.entries(data._miscPaidDate).forEach(([name,date])=>{
+      box.innerHTML += `<span class="badge neu">📅 ${name}:${date}</span>`;
+    });
+  }
+};
+
+/* ===============================
+   render拡張
+=============================== */
+
+const _oldRenderAll = renderAll;
+renderAll = function(){
+  _oldRenderAll();
+  calculateBalance();
+};
+
+const _oldRenderPartial = renderPartial;
+renderPartial = function(){
+  _oldRenderPartial();
+  calculateBalance();
+};
+</script>
+<script>
+/* =========================
+  ダークモード用 グラフ文字色パッチ
+  （既存コードを触らない）
+========================= */
+
+(function(){
+
+  // 元のrenderChartを保存
+  const originalRenderChart = window.renderChart;
+
+  // 上書き
+  window.renderChart = function(){
+
+    // まず元のグラフを普通に描画
+    originalRenderChart();
+
+    const canvas = document.getElementById("chart");
+    if(!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    // ダーク判定
+    const isDark = document.body.classList.contains("dark");
+
+    // ダークの時だけ再描画
+    if(!isDark) return;
+
+    // === 月データ再取得 ===
+    recomputeMonthly(monthKey());
+    const m=data._monthly[monthKey()]||{};
+    const cost=m.cost||0;
+    const fixed=m.fixed||0;
+
+    const max=Math.max(cost,fixed,1);
+    const scale=120/max;
+
+    // 白文字で上書き描画
+    ctx.fillStyle="#ffffff";
+
+    const ch=cost*scale;
+    ctx.fillText(cost+"円",50,150-ch-5);
+
+    const fh=fixed*scale;
+    ctx.fillText(fixed+"円",130,150-fh-5);
+
+    ctx.fillText("変動",50,165);
+    ctx.fillText("固定",130,165);
+  };
+
+  // テーマ変更時にも再描画
+  const oldApplyThemePreset = window.applyThemePreset;
+  window.applyThemePreset = function(name){
+    oldApplyThemePreset(name);
+    setTimeout(()=>renderChart(),50);
+  };
+
+})();
+
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+<script>
+/* レシート OCR → costValue（Tesseract 読み込み後） */
+(function(){
+  const receiptInput=document.getElementById("receiptInput");
+  if(!receiptInput) return;
+
+  function extractPrice(text){
+    text=text.replace(/[０-９]/g,s=>
+      String.fromCharCode(s.charCodeAt(0)-65248)
+    );
+
+    const lines=text.split("\n");
+
+    for(let line of lines){
+      if(/合計|TOTAL|計/i.test(line)){
+        const match=line.match(/\d{3,}/);
+        if(match) return parseInt(match[0],10);
+      }
+    }
+
+    const nums=text.match(/\d{3,}/g);
+    if(!nums) return null;
+
+    return Math.max(...nums.map(n=>parseInt(n,10)));
+  }
+
+  async function resizeImage(file){
+    return new Promise((resolve)=>{
+      const img=new Image();
+      const reader=new FileReader();
+
+      reader.onload=(e)=>{
+        img.onload=()=>{
+          try{
+            const canvas=document.createElement("canvas");
+
+            const maxWidth=800;
+            const scale=Math.min(maxWidth/img.width,1);
+
+            canvas.width=Math.floor(img.width*scale);
+            canvas.height=Math.floor(img.height*scale);
+
+            const ctx=canvas.getContext("2d");
+            ctx.drawImage(img,0,0,canvas.width,canvas.height);
+
+            canvas.toBlob((blob)=>{
+              if(blob){
+                resolve(blob);
+              }else{
+                console.warn("toBlob失敗 → 元画像使用");
+                resolve(file);
+              }
+            },"image/jpeg",0.7);
+
+          }catch(err){
+            console.error("resizeエラー",err);
+            resolve(file);
+          }
+        };
+
+        img.onerror=()=>{
+          console.warn("画像読み込み失敗 → 元画像使用");
+          resolve(file);
+        };
+
+        img.src=e.target.result;
+      };
+
+      reader.onerror=()=>{
+        console.warn("FileReader失敗 → 元画像使用");
+        resolve(file);
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+
+  receiptInput.addEventListener("change", async (e) => {
+    const file=e.target.files?.[0];
+    if(!file){
+      e.target.value="";
+      return;
+    }
+    const isImage=
+      file.type.startsWith("image/")||
+      file.name.match(/\.(jpg|jpeg|png|webp)$/i);
+
+    if(!isImage){
+      alert("画像ファイルを選択してください");
+      e.target.value="";
+      return;
+    }
+    try{
+      if(typeof Tesseract==="undefined"){
+        showSaveToast("⚠️ OCRライブラリを読み込めていません");
+        return;
+      }
+      showSaveToast("📸 解析中...");
+
+      const resized=await resizeImage(file);
+
+      console.log("ファイル:", file);
+      console.log("type:", file.type);
+      console.log("name:", file.name);
+
+      console.log("OCR開始");
+      const { data:{ text } }=await Tesseract.recognize(
+        resized,
+        "eng",
+        {
+          logger:m=>console.log(m)
+        }
+      );
+      console.log("OCR成功");
+      console.log("OCR結果:",text);
+
+      const price=extractPrice(text);
+
+      if(price){
+        document.getElementById("costValue").value=price;
+        showSaveToast("💰 "+price+"円 読み取り完了");
+      }else{
+        showSaveToast("⚠️ 金額が見つかりません");
+      }
+    }catch(err){
+      console.error("OCRエラー詳細:", err);
+      alert("OCRエラー: " + (err?.message || JSON.stringify(err)));
+    }finally{
+      console.log("OCR終了");
+      e.target.value="";
+    }
+  });
+})();
+</script>
+
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("./sw.js")
+      .then(() => console.log("SW registered"))
+      .catch(err => console.error(err));
+  });
+}
+</script>
+
+
+</body>
+</html>
